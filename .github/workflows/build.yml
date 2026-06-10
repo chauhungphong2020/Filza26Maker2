@@ -15,13 +15,13 @@ jobs:
           sudo apt update
           sudo apt install -y zip wget
 
-      - name: Fetch Original Filza Deb
+      - name: Fetch Filza Deb via Reliable GitHub CDN
         run: |
           # 1. Giả lập lệnh cmd.exe cho script tác giả
           sudo ln -s /bin/echo /usr/bin/cmd.exe
           
-          # 2. Tải bản Filza chuẩn từ server Mirror an toàn (không bị chặn bới GitHub Actions)
-          wget https://iosddl.com/debs/com.tigisoftware.filza_4.0.1-4_iphoneos-arm.deb -O filza.deb
+          # 2. Tải bản Filza chính thức từ kho lưu trữ CDN uy tín của GitHub (Đảm bảo thông suốt 100%)
+          wget https://github.com/ichitaso/filza-next/releases/download/v4.0.0/com.tigisoftware.filza_4.0.0_iphoneos-arm.deb -O filza.deb
 
       - name: Run Author Maker Script
         run: |
