@@ -15,31 +15,31 @@ jobs:
           sudo apt update
           sudo apt install -y zip wget
 
-      - name: Create Fake Windows Environment for Author Script
+      - name: Patch Author Script for Linux Environment
         run: |
-          # 1. Giả lập lệnh cmd.exe của Windows trên Linux
+          # 1. Giả lập lệnh cmd.exe của Windows
           sudo ln -s /bin/echo /usr/bin/cmd.exe
           
-          # 2. Tạo đường dẫn Desktop ảo đúng như script của tác giả yêu cầu cứu cánh
-          sudo mkdir -p /mnt/c/Users/runner/Desktop
-          sudo chmod -R 777 /mnt/c
-          
-          # 3. Tải file .deb mồi tên 'filza.deb' vào đúng thư mục gốc
+          # 2. Tải bản Filza chính thức từ BigBoss đổi tên thành filza.deb đúng cấu trúc tác giả cần
           wget http://apt.thebigboss.org/repofiles/cydia/debs2.0/com.tigisoftware.filza_4.0.1-4.deb -O filza.deb
+          
+          # 3. SỬA ĐIỂM CHẾT: Ép script xuất file IPA ngay tại thư mục hiện tại thay vì ổ C của Windows
+          sed -i 's|mv Filza.ipa /mnt/c/.*|echo "Gom file tai cho"|g' Filza26Maker.sh
+          sed -i 's|mv Filza26.ipa /mnt/c/.*|echo "Gom file tai cho"|g' Filza26Maker.sh
 
       - name: Run Author Maker Script
         run: |
-          # Chạy script gốc của tác giả, đặt tên máy tính ảo là 'runner' và tự chọn phím 1
-          export username="runner"
+          # Chạy script gốc của tác giả và tự động chọn phương án 1
           echo "1" | bash Filza26Maker.sh
 
-      - name: Collect IPA from Fake Desktop
+      - name: Find and Verify IPA
         run: |
-          # Lấy file IPA đã được xử lý tối ưu cho Non-Jailbreak từ Desktop ảo ra ngoài
-          cp /mnt/c/Users/runner/Desktop/*.ipa ./Filza-iOS-NonJailbreak.ipa
+          # Tìm kiếm file IPA được tạo ra ở mọi ngóc ngách và đưa ra ngoài
+          find . -name "*.ipa" -exec cp {} ./Filza-Author-NonJailbreak.ipa \;
+          ls -la ./Filza-Author-NonJailbreak.ipa
 
       - name: Upload IPA Artifact
         uses: actions/upload-artifact@v4
         with:
           name: Filza-Author-IPA
-          path: ./Filza-iOS-NonJailbreak.ipa
+          path: ./Filza-Author-NonJailbreak.ipa
