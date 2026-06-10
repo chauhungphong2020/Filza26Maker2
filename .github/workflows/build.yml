@@ -15,9 +15,13 @@ jobs:
 
       - name: Run Maker Script
         run: |
-          # Tạo lệnh cmd.exe giả lập để script của tác giả không bị lỗi trên Linux
           sudo ln -s /bin/echo /usr/bin/cmd.exe
           bash Filza26Maker.sh
+
+      - name: Find and Move IPA
+        run: |
+          # Tìm file ipa ở các thư mục con (nếu có) và đưa ra thư mục gốc
+          find . -name "*.ipa" -exec cp {} . \;
 
       - name: Upload IPA Artifact
         uses: actions/upload-artifact@v4
