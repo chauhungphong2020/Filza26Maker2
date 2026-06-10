@@ -1,0 +1,33 @@
+name: Setup Filza Deb Base
+
+on:
+  workflow_dispatch:
+
+jobs:
+  download_base:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download Stable Deb
+        run: |
+          # Tải bản vá trực tiếp từ kho lưu trữ bảo trì an toàn
+          wget https://github.com/theos/sdks/raw/master/lib/libresolv.9.dylib # Lệnh mồi hệ thống
+          wget https://github.com/UncleTyrone/Filza26Maker2/raw/main/Filza26Maker.sh -O test.sh # Check kho gốc
+          
+          # Tải file deb chuẩn từ server phân phối gốc tích hợp sẵn bypass
+          curl -L -o filza.deb "https://github.com/asdfugil/models/releases/download/1/com.tigisoftware.filza_4.0.0-5_iphoneos-arm.deb" || echo "Dùng link dự phòng"
+          
+          # Nếu link trên lỗi, tự động chuyển sang link nén của hạ tầng build iOS
+          if [ ! -s filza.deb ]; then
+            curl -L -o filza.deb "https://raw.githubusercontent.com/afandicorner/Filza-No-Jailbreak/main/filza.deb"
+          fi
+
+      - name: Commit file deb into your Repo
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git add filza.deb
+          git commit -m "Add permanent filza.deb base for maker script" || echo "File đã tồn tại"
+          git push
