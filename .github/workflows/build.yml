@@ -1,0 +1,23 @@
+name: Make IPA
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: sudo apt update && sudo apt install -y zip
+
+      - name: Run Maker Script
+        run: bash Filza26Maker.sh
+
+      - name: Upload IPA Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Filza-IPA
+          path: ./*.ipa
