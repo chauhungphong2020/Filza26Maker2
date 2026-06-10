@@ -17,18 +17,21 @@ jobs:
 
       - name: Auto Build Filza IPA
         run: |
-          # 1. Tải file .deb chính thức của Filza từ Tigi Software
-          wget http://tigisoftware.com/cydia/com.tigisoftware.filza_4.0.0-5_iphoneos-arm.deb
+          # 1. Tải file .deb của Filza từ server dự phòng ổn định
+          wget https://github.com/asdfugil/models/releases/download/1/com.tigisoftware.filza_4.0.0-5_iphoneos-arm.deb
           
           # 2. Giải nén file .deb
           ar x com.tigisoftware.filza_4.0.0-5_iphoneos-arm.deb
-          tar -xf data.tar.gz
+          tar -xf data.tar.xz || tar -xf data.tar.gz
           
           # 3. Tạo cấu trúc thư mục Payload cho file IPA
           mkdir -p Payload
           cp -r Applications/Filza.app Payload/
           
-          # 4. Đóng gói thành file Filza.ipa
+          # 4. Sửa quyền thực thi cho file chạy chính bên trong Filza
+          chmod +x Payload/Filza.app/Filza
+          
+          # 5. Đóng gói thành file Filza.ipa
           zip -r Filza.ipa Payload
           
           echo "--- ĐÃ ĐÓNG GÓI FILE IPA THÀNH CÔNG ---"
