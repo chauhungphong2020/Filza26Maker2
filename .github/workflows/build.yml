@@ -14,7 +14,10 @@ jobs:
         run: sudo apt update && sudo apt install -y zip
 
       - name: Run Maker Script
-        run: bash Filza26Maker.sh
+        run: |
+          # Tạo lệnh cmd.exe giả lập để script của tác giả không bị lỗi trên Linux
+          sudo ln -s /bin/echo /usr/bin/cmd.exe
+          bash Filza26Maker.sh
 
       - name: Upload IPA Artifact
         uses: actions/upload-artifact@v4
