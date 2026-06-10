@@ -15,21 +15,26 @@ jobs:
           sudo apt update
           sudo apt install -y zip wget
 
-      - name: Run Author Maker Script
+      - name: Prepare Filza Deb for Author Script
         run: |
-          # 1. Tạo lệnh cmd.exe giả lập để script Windows/WSL của tác giả chạy được trên Linux
+          # 1. Tạo lệnh cmd.exe giả lập cho môi trường Linux
           sudo ln -s /bin/echo /usr/bin/cmd.exe
           
-          # 2. Chạy chính xác file của tác giả và tự động "nhấn phím 1" để chọn bản Filza gốc
+          # 2. Tải bản Filza chính thức từ kho BigBoss uy tín và đổi tên thành 'filza.deb' đúng như script tác giả yêu cầu
+          wget http://apt.thebigboss.org/repofiles/cydia/debs2.0/com.tigisoftware.filza_4.0.1-4.deb -O filza.deb
+
+      - name: Run Author Maker Script
+        run: |
+          # Chạy chính xác script của tác giả và tự động chọn phương án 1
           echo "1" | bash Filza26Maker.sh
 
-      - name: Find and Move IPA
+      - name: Collect Output IPA
         run: |
-          # Kiểm tra và đưa file IPA được sinh ra từ script của tác giả ra thư mục gốc để đóng gói
+          # Lôi file IPA đóng gói theo chuẩn của tác giả ra thư mục chính
           find . -name "*.ipa" -exec cp {} . \;
 
       - name: Upload IPA Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Filza-IPA
+          name: Filza-26-Maker-IPA
           path: ./*.ipa
