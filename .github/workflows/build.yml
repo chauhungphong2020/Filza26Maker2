@@ -13,33 +13,32 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt install -y zip
+          sudo apt install -y zip wget
 
-      - name: Build Directly From Author Files
+      - name: Fetch Original Filza Deb
         run: |
-          # 1. Tạo cấu trúc thư mục Payload chuẩn iOS
-          mkdir -p Payload
+          # 1. Giả lập lệnh cmd.exe cho script tác giả
+          sudo ln -s /bin/echo /usr/bin/cmd.exe
           
-          # 2. Sao chép thư mục Filza.app gốc của tác giả vào Payload
-          # (Tự động tìm kiếm vị trí thư mục .app trong kho để copy chính xác)
-          APP_PATH=$(find . -name "Filza.app" -type d | head -n 1)
-          if [ -n "$APP_PATH" ]; then
-            cp -r "$APP_PATH" Payload/
-            echo "Tìm thấy Filza.app tại: $APP_PATH"
-          else
-            echo "Không tìm thấy thư mục Filza.app gốc!" && exit 1
-          fi
+          # 2. Tải bản Filza chuẩn từ server Mirror an toàn (không bị chặn bới GitHub Actions)
+          wget https://iosddl.com/debs/com.tigisoftware.filza_4.0.1-4_iphoneos-arm.deb -O filza.deb
+
+      - name: Run Author Maker Script
+        run: |
+          # 3. Sửa dòng lệnh di chuyển file Windows cuối script của tác giả để xuất file tại chỗ
+          sed -i 's|mv Filza.ipa /mnt/c/.*|echo "Xong"|g' Filza26Maker.sh
+          sed -i 's|mv Filza26.ipa /mnt/c/.*|echo "Xong"|g' Filza26Maker.sh
           
-          # 3. Sửa quyền thực thi (Bước cực kỳ quan trọng cho máy Non-Jailbreak để tránh văng app)
-          chmod +x Payload/Filza.app/Filza
-          
-          # 4. Đóng gói thành file IPA chuẩn cho máy Jailed
-          zip -r Filza-NonJailbreak.ipa Payload
-          
-          echo "--- ĐÃ ĐÓNG GÓI THÀNH CÔNG FILE IPA GỐC CỦA TÁC GIẢ ---"
+          # 4. Chạy script của tác giả và tự động chọn 1
+          echo "1" | bash Filza26Maker.sh
+
+      - name: Output IPA Verification
+        run: |
+          # 5. Gom file IPA do chính script tác giả vừa tạo ra
+          find . -name "*.ipa" -exec cp {} ./Filza-Author-iOS26.ipa \;
 
       - name: Upload IPA Artifact
         uses: actions/upload-artifact@v4
         with:
           name: Filza-Author-IPA
-          path: ./Filza-NonJailbreak.ipa
+          path: ./Filza-Author-iOS26.ipa
