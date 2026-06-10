@@ -15,28 +15,34 @@ jobs:
           sudo apt update
           sudo apt install -y zip wget
 
-      - name: Patch Author Script for Linux Environment
+      - name: Replicate Author Method for Non-Jailbreak
         run: |
-          # 1. Giả lập lệnh cmd.exe của Windows
-          sudo ln -s /bin/echo /usr/bin/cmd.exe
-          
-          # 2. Tải bản Filza chính thức từ BigBoss đổi tên thành filza.deb đúng cấu trúc tác giả cần
+          # 1. Tải bản Filza gốc từ BigBoss
           wget http://apt.thebigboss.org/repofiles/cydia/debs2.0/com.tigisoftware.filza_4.0.1-4.deb -O filza.deb
           
-          # 3. SỬA ĐIỂM CHẾT: Ép script xuất file IPA ngay tại thư mục hiện tại thay vì ổ C của Windows
-          sed -i 's|mv Filza.ipa /mnt/c/.*|echo "Gom file tai cho"|g' Filza26Maker.sh
-          sed -i 's|mv Filza26.ipa /mnt/c/.*|echo "Gom file tai cho"|g' Filza26Maker.sh
-
-      - name: Run Author Maker Script
-        run: |
-          # Chạy script gốc của tác giả và tự động chọn phương án 1
-          echo "1" | bash Filza26Maker.sh
-
-      - name: Find and Verify IPA
-        run: |
-          # Tìm kiếm file IPA được tạo ra ở mọi ngóc ngách và đưa ra ngoài
-          find . -name "*.ipa" -exec cp {} ./Filza-Author-NonJailbreak.ipa \;
-          ls -la ./Filza-Author-NonJailbreak.ipa
+          # 2. Giải nén cấu trúc file deb
+          ar x filza.deb
+          if [ -f data.tar.xz ]; then
+            tar -xf data.tar.xz
+          elif [ -f data.tar.gz ]; then
+            tar -xf data.tar.gz
+          fi
+          
+          # 3. Tạo cấu trúc thư mục Payload cho file IPA Non-Jailbreak
+          mkdir -p Payload
+          if [ -d Applications/Filza.app ]; then
+            cp -r Applications/Filza.app Payload/
+          elif [ -d Library/Applications/Filza.app ]; then
+            cp -r Library/Applications/Filza.app Payload/
+          fi
+          
+          # 4. Sửa quyền thực thi cho file chạy chính (bước bắt buộc cho máy Jailed/Non-JB)
+          chmod +x Payload/Filza.app/Filza
+          
+          # 5. Đóng gói thành file IPA đúng chuẩn cấu trúc iOS
+          zip -r Filza-Author-NonJailbreak.ipa Payload
+          
+          echo "--- ĐÃ ĐÓNG GÓI THÀNH CÔNG THEO PHƯƠNG PHÁP NON-JAILBREAK ---"
 
       - name: Upload IPA Artifact
         uses: actions/upload-artifact@v4
