@@ -15,26 +15,31 @@ jobs:
           sudo apt update
           sudo apt install -y zip wget
 
-      - name: Prepare Filza Deb for Author Script
+      - name: Create Fake Windows Environment for Author Script
         run: |
-          # 1. Tạo lệnh cmd.exe giả lập cho môi trường Linux
+          # 1. Giả lập lệnh cmd.exe của Windows trên Linux
           sudo ln -s /bin/echo /usr/bin/cmd.exe
           
-          # 2. Tải bản Filza chính thức từ kho BigBoss uy tín và đổi tên thành 'filza.deb' đúng như script tác giả yêu cầu
+          # 2. Tạo đường dẫn Desktop ảo đúng như script của tác giả yêu cầu cứu cánh
+          sudo mkdir -p /mnt/c/Users/runner/Desktop
+          sudo chmod -R 777 /mnt/c
+          
+          # 3. Tải file .deb mồi tên 'filza.deb' vào đúng thư mục gốc
           wget http://apt.thebigboss.org/repofiles/cydia/debs2.0/com.tigisoftware.filza_4.0.1-4.deb -O filza.deb
 
       - name: Run Author Maker Script
         run: |
-          # Chạy chính xác script của tác giả và tự động chọn phương án 1
+          # Chạy script gốc của tác giả, đặt tên máy tính ảo là 'runner' và tự chọn phím 1
+          export username="runner"
           echo "1" | bash Filza26Maker.sh
 
-      - name: Collect Output IPA
+      - name: Collect IPA from Fake Desktop
         run: |
-          # Lôi file IPA đóng gói theo chuẩn của tác giả ra thư mục chính
-          find . -name "*.ipa" -exec cp {} . \;
+          # Lấy file IPA đã được xử lý tối ưu cho Non-Jailbreak từ Desktop ảo ra ngoài
+          cp /mnt/c/Users/runner/Desktop/*.ipa ./Filza-iOS-NonJailbreak.ipa
 
       - name: Upload IPA Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Filza-26-Maker-IPA
-          path: ./*.ipa
+          name: Filza-Author-IPA
+          path: ./Filza-iOS-NonJailbreak.ipa
