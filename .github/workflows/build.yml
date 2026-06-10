@@ -11,20 +11,30 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install dependencies
-        run: sudo apt update && sudo apt install -y zip
-
-      - name: Run Maker Script
         run: |
-          sudo ln -s /bin/echo /usr/bin/cmd.exe
-          bash Filza26Maker.sh
+          sudo apt update
+          sudo apt install -y zip wget
 
-      - name: Find and Move IPA
+      - name: Auto Build Filza IPA
         run: |
-          # Tìm file ipa ở các thư mục con (nếu có) và đưa ra thư mục gốc
-          find . -name "*.ipa" -exec cp {} . \;
+          # 1. Tải file .deb chính thức của Filza từ Tigi Software
+          wget http://tigisoftware.com/cydia/com.tigisoftware.filza_4.0.0-5_iphoneos-arm.deb
+          
+          # 2. Giải nén file .deb
+          ar x com.tigisoftware.filza_4.0.0-5_iphoneos-arm.deb
+          tar -xf data.tar.gz
+          
+          # 3. Tạo cấu trúc thư mục Payload cho file IPA
+          mkdir -p Payload
+          cp -r Applications/Filza.app Payload/
+          
+          # 4. Đóng gói thành file Filza.ipa
+          zip -r Filza.ipa Payload
+          
+          echo "--- ĐÃ ĐÓNG GÓI FILE IPA THÀNH CÔNG ---"
 
       - name: Upload IPA Artifact
         uses: actions/upload-artifact@v4
         with:
           name: Filza-IPA
-          path: ./*.ipa
+          path: ./Filza.ipa
